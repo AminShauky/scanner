@@ -20,13 +20,12 @@
             background-color: #1a010d; 
             color: #fbcfe8;
             
-            /* KUNCI KEBAL UNTUK ELAK SELECT / HIGHLIGHT / COPY DI FON */
             -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none; /* Elak menu popup kat iPhone */
-            -webkit-user-select: none;   /* Safari */
-            -moz-user-select: none;      /* Firefox */
-            -ms-user-select: none;       /* Internet Explorer/Edge */
-            user-select: none;           /* Standard */
+            -webkit-touch-callout: none; 
+            -webkit-user-select: none;   
+            -moz-user-select: none;      
+            -ms-user-select: none;       
+            user-select: none;           
         }
 
         /* =========================================
@@ -75,7 +74,7 @@
             stroke-linecap: round;
             stroke-linejoin: round;
             transition: all 0.3s ease;
-            pointer-events: none; /* Supaya fon tak anggap ini gambar yg boleh disave */
+            pointer-events: none; 
         }
 
         .garisan-scan {
@@ -206,7 +205,7 @@
 <body>
 
     <div id="skrin-scanner">
-        <div class="arahan-scan" id="arahan">Sila letak dan tahan jari anda<br>untuk pengesahan identiti</div>
+        <div class="arahan-scan" id="arahan">Sila letak dan tahan jari kamu<br>untuk pengesahan identiti</div>
         
         <div class="cap-jari-box" id="butang-scan">
             <svg class="ikon-cap-jari" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -229,7 +228,7 @@
         <div id="teks-amaran">
             <div class="access-granted">ACCESS GRANTED</div>
             <div class="warning-text">AMARAN:<br>Pencuri Hati Dikesan! 🚨</div>
-            <div class="lepas-jari">(Sila lepaskan jari anda)</div>
+            <div class="lepas-jari">(Sila lepaskan jari kamu)</div>
         </div>
     </div>
 
@@ -239,26 +238,49 @@
         </div>
     </div>
 
-    <audio id="bg-lagu" src="lagu2.mp3" loop></audio>
+    <!-- Tambah preload="auto" supaya fon Apple sedia awal-awal -->
+    <audio id="bg-lagu" src="lagu.mp3" loop preload="auto"></audio>
 
     <script>
-        const mesejPenuh = "Awak dah berjaya melepasi sistem keselamatan ni...\n\nTapi sebenarnya, awak dah lama pun ceroboh masuk ke dalam hati saya. 🤭\n\nTerima kasih sebab selalu ada dan jadi diri awak yang comel tu. Jaga diri elok-elok tau! ✨💖";
+        const mesejPenuh = "Kamu dah berjaya melepasi sistem keselamatan ni...\n\nTapi sebenarnya, awak dah lama pun ceroboh masuk ke dalam hati saya. 🤭\n\nTerima kasih sebab selalu ada dan jadi diri awak yang comel tu. Jaga diri elok-elok tau! ✨💖";
 
         let peratus = 0;
         let memoriScan;
         let sedangScan = false;
         let dahBuka = false; 
         let laguDahMain = false; 
+        let safariDahUnlock = false; // Kunci rahsia untuk Safari
 
         const butangScan = document.getElementById('butang-scan');
         const teksPeratus = document.getElementById('nombor-peratus');
         const audioLagu = document.getElementById('bg-lagu');
 
         function mulaScan(e) {
-            // e.preventDefault() ni penting gila untuk halang fon keluarkan popup 'select'
             if (e.cancelable) {
                 e.preventDefault(); 
             }
+
+            // === TRIK MAGIS KHAS UNTUK SAFARI / IPHONE ===
+            // Mute dan play sekejap masa mula-mula tekan supaya Safari izinkan
+            if (!safariDahUnlock) {
+                audioLagu.load(); // Wajib untuk Safari recognize fail
+                audioLagu.muted = true; 
+                let janjiPlay = audioLagu.play();
+                
+                if (janjiPlay !== undefined) {
+                    janjiPlay.then(() => {
+                        audioLagu.pause();
+                        audioLagu.currentTime = 0;
+                        audioLagu.muted = false; // Buka balik suara
+                        safariDahUnlock = true;
+                    }).catch(err => {
+                        console.log("Safari hold audio, takpe tunggu touchend");
+                        safariDahUnlock = true;
+                    });
+                }
+            }
+            // =============================================
+
             if (dahBuka) return;
             sedangScan = true;
             butangScan.classList.add('aktif');
@@ -283,6 +305,8 @@
             
             if (dahBuka) {
                 if (!laguDahMain) {
+                    audioLagu.muted = false; // Pastikan tak senyap
+                    audioLagu.volume = 1;
                     audioLagu.play(); 
                     laguDahMain = true;
                     jalankanFasaComel();
@@ -301,7 +325,6 @@
             }, 30);
         }
 
-        // Tadi ada {passive: true} yang buatkan preventDefault() terbatal, aku dah buang
         butangScan.addEventListener('touchstart', mulaScan, {passive: false});
         butangScan.addEventListener('touchend', hentiScan, {passive: false});
         butangScan.addEventListener('mousedown', mulaScan);
