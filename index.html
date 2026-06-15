@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Keselamatan 🔒</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh; 
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            background-color: #1a010d; 
+            color: #fbcfe8;
+        }
+
+        /* =========================================
+           FASA 1: SKRIN SCANNER JARI
+           ========================================= */
+        #skrin-scanner {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            background: radial-gradient(circle, #4c0519 0%, #1a010d 100%);
+            transition: opacity 1s ease;
+        }
+
+        .arahan-scan {
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+            color: #f472b6;
+            letter-spacing: 1px;
+            height: 60px;
+        }
+
+        .cap-jari-box {
+            position: relative;
+            width: 120px;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .ikon-cap-jari {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: #831843;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: all 0.3s ease;
+        }
+
+        .garisan-scan {
+            position: absolute;
+            top: 10%;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #ec4899;
+            box-shadow: 0 0 15px 5px rgba(236, 72, 153, 0.6);
+            border-radius: 5px;
+            display: none;
+            animation: imbas 1.2s infinite alternate ease-in-out;
+        }
+
+        @keyframes imbas {
+            0% { top: 10%; }
+            100% { top: 90%; }
+        }
+
+        .cap-jari-box.aktif .ikon-cap-jari {
+            stroke: #ec4899;
+            filter: drop-shadow(0 0 10px rgba(236, 72, 153, 0.8));
+        }
+
+        .cap-jari-box.aktif .garisan-scan {
+            display: block;
+        }
+
+        .peratusan {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 30px;
+            color: #f9a8d4;
+            font-family: monospace;
+        }
+
+        #teks-amaran {
+            display: none;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .access-granted {
+            color: #10b981; 
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            animation: kelip 0.5s infinite alternate;
+        }
+
+        .warning-text {
+            color: #ef4444; 
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 2px dashed #ef4444;
+            animation: kelip 0.3s infinite alternate;
+        }
+
+        @keyframes kelip {
+            0% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        /* =========================================
+           FASA 2: KANDUNGAN AYAT (Mewah & Comel)
+           ========================================= */
+        #kandungan-utama {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: none; 
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff0f5; 
+            background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f472b6' fill-opacity='0.25' font-family='Arial' font-size='16' text-anchor='middle'%3E%3Ctext x='20' y='25'%3E%E2%99%A5%3C/text%3E%3Ctext x='60' y='65'%3E%E2%99%A5%3C/text%3E%3Ctext x='60' y='25'%3E%E2%9C%A8%3C/text%3E%3Ctext x='20' y='65'%3E%E2%9C%A8%3C/text%3E%3Ctext x='40' y='45'%3E%E2%9C%BF%3C/text%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            z-index: 10;
+            padding: 20px;
+        }
+
+        .mesej-box {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 40px 30px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 15px 35px rgba(244, 114, 182, 0.3);
+            border: 2px solid #fce7f3;
+            text-align: left; 
+        }
+
+        .ayat-manis {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem; 
+            font-weight: 600;
+            color: #9d174d;
+            line-height: 1.6;
+        }
+
+        .kursor {
+            display: inline-block;
+            width: 3px;
+            background-color: #9d174d;
+            animation: blink 0.8s infinite;
+            margin-left: 3px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="skrin-scanner">
+        <div class="arahan-scan" id="arahan">Sila letak dan hold jari kamu<br>untuk pengesahan identiti</div>
+        
+        <div class="cap-jari-box" id="butang-scan">
+            <svg class="ikon-cap-jari" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10"/>
+                <path d="M5 12a7 7 0 0 1 14 0"/>
+                <path d="M8 12a4 4 0 0 1 8 0"/>
+                <path d="M11 12a1 1 0 0 1 2 0"/>
+                <path d="M3.4 15.6c-.6.9-1.2 2-1.4 3.4"/>
+                <path d="M6.3 16c-.5 1.5-.8 3.2-.8 5"/>
+                <path d="M9.7 16.5c-.3 1.3-.4 2.8-.2 4.5"/>
+                <path d="M13.2 16.7c.2 1.3.5 2.7 1 4.3"/>
+                <path d="M16.9 16.1c.7 1.4 1.6 2.7 2.6 3.9"/>
+                <path d="M20.6 15c1 1.2 1.9 2.4 2.4 3.6"/>
+            </svg>
+            <div class="garisan-scan"></div>
+        </div>
+
+        <div class="peratusan" id="nombor-peratus">0%</div>
+
+        <div id="teks-amaran">
+            <div class="access-granted">ACCESS GRANTED</div>
+            <div class="warning-text">AMARAN:<br>Pencuri Hati Dikesan! 🚨</div>
+        </div>
+    </div>
+
+    <div id="kandungan-utama">
+        <div class="mesej-box">
+            <div class="ayat-manis" id="ruang-mesej"></div>
+        </div>
+    </div>
+
+    <audio id="bg-lagu" src="lagu2.mp3" loop></audio>
+
+    <script>
+        // === TETAPAN AYAT ===
+        const mesejPenuh = "Kamu dah berjaya melepasi sistem keselamatan ni...\n\nTapi sebenarnya, kamu dah lama pun ceroboh masuk ke dalam hati saya. 🤭\n\nTerima kasih sebab ada dan jadi diri kamu yang comel tu. Jaga diri elok-elok tau! ✨💖";
+
+        // === LOGIK SCANNER JARI ===
+        let peratus = 0;
+        let memoriScan;
+        let sedangScan = false;
+        let dahBuka = false; 
+
+        const butangScan = document.getElementById('butang-scan');
+        const teksPeratus = document.getElementById('nombor-peratus');
+        const audioLagu = document.getElementById('bg-lagu');
+
+        function mulaScan(e) {
+            if (dahBuka) return;
+            e.preventDefault(); 
+            sedangScan = true;
+            butangScan.classList.add('aktif');
+            
+            clearInterval(memoriScan);
+            memoriScan = setInterval(() => {
+                peratus += 1.5;
+                if (peratus >= 100) {
+                    peratus = 100;
+                    bukaSistem(); 
+                }
+                teksPeratus.innerText = Math.floor(peratus) + '%';
+            }, 30);
+        }
+
+        function hentiScan(e) {
+            if (dahBuka) return;
+            e.preventDefault();
+            sedangScan = false;
+            butangScan.classList.remove('aktif');
+            
+            clearInterval(memoriScan);
+            memoriScan = setInterval(() => {
+                peratus -= 3;
+                if (peratus <= 0) {
+                    peratus = 0;
+                    clearInterval(memoriScan);
+                }
+                teksPeratus.innerText = Math.floor(peratus) + '%';
+            }, 30);
+        }
+
+        butangScan.addEventListener('touchstart', mulaScan);
+        butangScan.addEventListener('touchend', hentiScan);
+        butangScan.addEventListener('mousedown', mulaScan);
+        butangScan.addEventListener('mouseup', hentiScan);
+        butangScan.addEventListener('mouseleave', hentiScan); 
+
+        // === FUNGSI BILA SCAN 100% ===
+        function bukaSistem() {
+            dahBuka = true;
+            clearInterval(memoriScan);
+            butangScan.classList.remove('aktif');
+            
+            document.getElementById('arahan').style.display = 'none';
+            butangScan.style.display = 'none';
+            teksPeratus.style.display = 'none';
+            document.getElementById('teks-amaran').style.display = 'block';
+
+            setTimeout(() => {
+                let skrinScanner = document.getElementById('skrin-scanner');
+                let skrinUtama = document.getElementById('kandungan-utama');
+                
+                skrinScanner.style.opacity = '0';
+                
+                setTimeout(() => {
+                    skrinScanner.style.display = 'none';
+                    skrinUtama.style.display = 'flex';
+                    
+                    // Mainkan lagu sebaik sahaja skrin bertukar pink
+                    audioLagu.play();
+
+                    setTimeout(() => {
+                        skrinUtama.style.opacity = '1';
+                        document.title = "Untuk Kamu 💖"; 
+                        // Mula menaip ayat
+                        setTimeout(() => taipAyat(mesejPenuh, 0), 500);
+                    }, 50);
+                }, 1000); 
+            }, 3500); 
+        }
+
+        // === FUNGSI MENAIP AYAT ===
+        let ruangMesej = document.getElementById('ruang-mesej');
+        
+        function taipAyat(ayat, i) {
+            if (i < ayat.length) {
+                let paparanSementera = ayat.substring(0, i + 1).replace(/\n/g, '<br>');
+                ruangMesej.innerHTML = paparanSementera + '<span class="kursor"></span>';
+                
+                // Kelajuan menaip 
+                setTimeout(() => taipAyat(ayat, i + 1), 60);
+            } else {
+                ruangMesej.innerHTML = ayat.replace(/\n/g, '<br>') + '<span class="kursor"></span>';
+            }
+        }
+    </script>
+
+</body>
+</html>
