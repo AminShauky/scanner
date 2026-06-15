@@ -231,6 +231,7 @@
         let memoriScan;
         let sedangScan = false;
         let dahBuka = false; 
+        let laguDahUnlock = false; // Status untuk trik lagu fon
 
         const butangScan = document.getElementById('butang-scan');
         const teksPeratus = document.getElementById('nombor-peratus');
@@ -241,6 +242,21 @@
             e.preventDefault(); 
             sedangScan = true;
             butangScan.classList.add('aktif');
+            
+            // TRIK UNTUK FON (AUDIO UNLOCK HACK)
+            // Masa dia sentuh skrin kali pertama, kita play & pause lagu senyap-senyap
+            if (!laguDahUnlock) {
+                audioLagu.volume = 0; // Senyapkan dulu
+                let playPromise = audioLagu.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        audioLagu.pause();
+                        audioLagu.currentTime = 0;
+                        audioLagu.volume = 1; // Kuatkan balik volume ke asal
+                        laguDahUnlock = true;
+                    }).catch(error => console.log("Autoplay dihalang sikit, tapi takpe"));
+                }
+            }
             
             clearInterval(memoriScan);
             memoriScan = setInterval(() => {
@@ -287,8 +303,7 @@
             teksPeratus.style.display = 'none';
             document.getElementById('teks-amaran').style.display = 'block';
 
-            // KITA UBAH KAT SINI: Mainkan lagu SEGERA lepas cecah 100%
-            // Ini untuk lepas "security check" browser telefon
+            // Mainkan lagu secara rasmi (Sebab dah di-unlock kat atas tadi, fon akan benarkan)
             audioLagu.play();
 
             setTimeout(() => {
