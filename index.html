@@ -17,10 +17,16 @@
             align-items: center;
             height: 100vh;
             height: 100dvh; 
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
             background-color: #1a010d; 
             color: #fbcfe8;
+            
+            /* KUNCI KEBAL UNTUK ELAK SELECT / HIGHLIGHT / COPY DI FON */
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none; /* Elak menu popup kat iPhone */
+            -webkit-user-select: none;   /* Safari */
+            -moz-user-select: none;      /* Firefox */
+            -ms-user-select: none;       /* Internet Explorer/Edge */
+            user-select: none;           /* Standard */
         }
 
         /* =========================================
@@ -69,6 +75,7 @@
             stroke-linecap: round;
             stroke-linejoin: round;
             transition: all 0.3s ease;
+            pointer-events: none; /* Supaya fon tak anggap ini gambar yg boleh disave */
         }
 
         .garisan-scan {
@@ -132,7 +139,6 @@
             animation: kelip 0.3s infinite alternate;
         }
 
-        /* Teks suruh lepas jari */
         .lepas-jari {
             margin-top: 20px;
             font-size: 1.1rem;
@@ -151,7 +157,7 @@
         }
 
         /* =========================================
-           FASA 2: KANDUNGAN AYAT (Mewah & Comel)
+           FASA 2: KANDUNGAN AYAT
            ========================================= */
         #kandungan-utama {
             position: absolute;
@@ -195,7 +201,6 @@
             animation: blink 0.8s infinite;
             margin-left: 3px;
         }
-
     </style>
 </head>
 <body>
@@ -250,6 +255,10 @@
         const audioLagu = document.getElementById('bg-lagu');
 
         function mulaScan(e) {
+            // e.preventDefault() ni penting gila untuk halang fon keluarkan popup 'select'
+            if (e.cancelable) {
+                e.preventDefault(); 
+            }
             if (dahBuka) return;
             sedangScan = true;
             butangScan.classList.add('aktif');
@@ -265,22 +274,22 @@
             }, 30);
         }
 
-        // FUNGSI PALING PENTING UNTUK ANDROID
         function hentiScan(e) {
+            if (e.cancelable) {
+                e.preventDefault();
+            }
             sedangScan = false;
             butangScan.classList.remove('aktif');
             
-            // JIKA SCAN DAH 100% DAN USER LEPAS JARI...
             if (dahBuka) {
                 if (!laguDahMain) {
-                    audioLagu.play(); // Android benarkan sbb user gesture (angkat jari)
+                    audioLagu.play(); 
                     laguDahMain = true;
                     jalankanFasaComel();
                 }
                 return;
             }
             
-            // Jika lepaskan jari sebelum 100%, tolak peratus
             clearInterval(memoriScan);
             memoriScan = setInterval(() => {
                 peratus -= 3;
@@ -292,8 +301,9 @@
             }, 30);
         }
 
-        butangScan.addEventListener('touchstart', mulaScan, {passive: true});
-        butangScan.addEventListener('touchend', hentiScan, {passive: true});
+        // Tadi ada {passive: true} yang buatkan preventDefault() terbatal, aku dah buang
+        butangScan.addEventListener('touchstart', mulaScan, {passive: false});
+        butangScan.addEventListener('touchend', hentiScan, {passive: false});
         butangScan.addEventListener('mousedown', mulaScan);
         butangScan.addEventListener('mouseup', hentiScan);
         butangScan.addEventListener('mouseleave', hentiScan); 
@@ -307,13 +317,10 @@
             butangScan.style.display = 'none';
             teksPeratus.style.display = 'none';
             
-            // Tunjuk amaran & suruh dia angkat jari
             document.getElementById('teks-amaran').style.display = 'block';
         }
 
         function jalankanFasaComel() {
-            // Beri masa 2.5 saat untuk lagu main (masa ni skrin amaran merah masih ada), 
-            // pastu baru perlahan-lahan bertukar pink. Feeling dia mantap bro!
             setTimeout(() => {
                 let skrinScanner = document.getElementById('skrin-scanner');
                 let skrinUtama = document.getElementById('kandungan-utama');
@@ -326,8 +333,7 @@
                     
                     setTimeout(() => {
                         skrinUtama.style.opacity = '1';
-                        document.title = "Untuk Awak 💖"; 
-                        // Mula menaip ayat
+                        document.title = "Untuk Kamu 💖"; 
                         setTimeout(() => taipAyat(mesejPenuh, 0), 500);
                     }, 50);
                 }, 1000); 
