@@ -132,6 +132,19 @@
             animation: kelip 0.3s infinite alternate;
         }
 
+        /* Teks suruh lepas jari */
+        .lepas-jari {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            color: #fbcfe8;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.95); }
+        }
+
         @keyframes kelip {
             0% { opacity: 1; }
             100% { opacity: 0.3; }
@@ -188,7 +201,7 @@
 <body>
 
     <div id="skrin-scanner">
-        <div class="arahan-scan" id="arahan">Sila letak dan hold jari kamu<br>untuk pengesahan identiti</div>
+        <div class="arahan-scan" id="arahan">Sila letak dan tahan jari anda<br>untuk pengesahan identiti</div>
         
         <div class="cap-jari-box" id="butang-scan">
             <svg class="ikon-cap-jari" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -211,6 +224,7 @@
         <div id="teks-amaran">
             <div class="access-granted">ACCESS GRANTED</div>
             <div class="warning-text">AMARAN:<br>Pencuri Hati Dikesan! 🚨</div>
+            <div class="lepas-jari">(Sila lepaskan jari anda)</div>
         </div>
     </div>
 
@@ -222,16 +236,14 @@
 
     <audio id="bg-lagu" src="lagu2.mp3" loop></audio>
 
-   <script>
-        // === TETAPAN AYAT ===
+    <script>
         const mesejPenuh = "Awak dah berjaya melepasi sistem keselamatan ni...\n\nTapi sebenarnya, awak dah lama pun ceroboh masuk ke dalam hati saya. 🤭\n\nTerima kasih sebab selalu ada dan jadi diri awak yang comel tu. Jaga diri elok-elok tau! ✨💖";
 
-        // === LOGIK SCANNER JARI ===
         let peratus = 0;
         let memoriScan;
         let sedangScan = false;
         let dahBuka = false; 
-        let laguDahUnlock = false; // Status untuk trik lagu fon
+        let laguDahMain = false; 
 
         const butangScan = document.getElementById('butang-scan');
         const teksPeratus = document.getElementById('nombor-peratus');
@@ -239,24 +251,8 @@
 
         function mulaScan(e) {
             if (dahBuka) return;
-            e.preventDefault(); 
             sedangScan = true;
             butangScan.classList.add('aktif');
-            
-            // TRIK UNTUK FON (AUDIO UNLOCK HACK)
-            // Masa dia sentuh skrin kali pertama, kita play & pause lagu senyap-senyap
-            if (!laguDahUnlock) {
-                audioLagu.volume = 0; // Senyapkan dulu
-                let playPromise = audioLagu.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        audioLagu.pause();
-                        audioLagu.currentTime = 0;
-                        audioLagu.volume = 1; // Kuatkan balik volume ke asal
-                        laguDahUnlock = true;
-                    }).catch(error => console.log("Autoplay dihalang sikit, tapi takpe"));
-                }
-            }
             
             clearInterval(memoriScan);
             memoriScan = setInterval(() => {
@@ -269,12 +265,22 @@
             }, 30);
         }
 
+        // FUNGSI PALING PENTING UNTUK ANDROID
         function hentiScan(e) {
-            if (dahBuka) return;
-            e.preventDefault();
             sedangScan = false;
             butangScan.classList.remove('aktif');
             
+            // JIKA SCAN DAH 100% DAN USER LEPAS JARI...
+            if (dahBuka) {
+                if (!laguDahMain) {
+                    audioLagu.play(); // Android benarkan sbb user gesture (angkat jari)
+                    laguDahMain = true;
+                    jalankanFasaComel();
+                }
+                return;
+            }
+            
+            // Jika lepaskan jari sebelum 100%, tolak peratus
             clearInterval(memoriScan);
             memoriScan = setInterval(() => {
                 peratus -= 3;
@@ -286,13 +292,12 @@
             }, 30);
         }
 
-        butangScan.addEventListener('touchstart', mulaScan);
-        butangScan.addEventListener('touchend', hentiScan);
+        butangScan.addEventListener('touchstart', mulaScan, {passive: true});
+        butangScan.addEventListener('touchend', hentiScan, {passive: true});
         butangScan.addEventListener('mousedown', mulaScan);
         butangScan.addEventListener('mouseup', hentiScan);
         butangScan.addEventListener('mouseleave', hentiScan); 
 
-        // === FUNGSI BILA SCAN 100% ===
         function bukaSistem() {
             dahBuka = true;
             clearInterval(memoriScan);
@@ -301,11 +306,14 @@
             document.getElementById('arahan').style.display = 'none';
             butangScan.style.display = 'none';
             teksPeratus.style.display = 'none';
+            
+            // Tunjuk amaran & suruh dia angkat jari
             document.getElementById('teks-amaran').style.display = 'block';
+        }
 
-            // Mainkan lagu secara rasmi (Sebab dah di-unlock kat atas tadi, fon akan benarkan)
-            audioLagu.play();
-
+        function jalankanFasaComel() {
+            // Beri masa 2.5 saat untuk lagu main (masa ni skrin amaran merah masih ada), 
+            // pastu baru perlahan-lahan bertukar pink. Feeling dia mantap bro!
             setTimeout(() => {
                 let skrinScanner = document.getElementById('skrin-scanner');
                 let skrinUtama = document.getElementById('kandungan-utama');
@@ -323,10 +331,9 @@
                         setTimeout(() => taipAyat(mesejPenuh, 0), 500);
                     }, 50);
                 }, 1000); 
-            }, 3500); 
+            }, 2500); 
         }
 
-        // === FUNGSI MENAIP AYAT ===
         let ruangMesej = document.getElementById('ruang-mesej');
         
         function taipAyat(ayat, i) {
