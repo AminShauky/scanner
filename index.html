@@ -222,9 +222,9 @@
 
     <audio id="bg-lagu" src="lagu2.mp3" loop></audio>
 
-    <script>
+   <script>
         // === TETAPAN AYAT ===
-        const mesejPenuh = "Kamu dah berjaya melepasi sistem keselamatan ni...\n\nTapi sebenarnya, kamu dah lama pun ceroboh masuk ke dalam hati saya. 🤭\n\nTerima kasih sebab ada dan jadi diri kamu yang comel tu. Jaga diri elok-elok tau! ✨💖";
+        const mesejPenuh = "Awak dah berjaya melepasi sistem keselamatan ni...\n\nTapi sebenarnya, awak dah lama pun ceroboh masuk ke dalam hati saya. 🤭\n\nTerima kasih sebab selalu ada dan jadi diri awak yang comel tu. Jaga diri elok-elok tau! ✨💖";
 
         // === LOGIK SCANNER JARI ===
         let peratus = 0;
@@ -287,6 +287,10 @@
             teksPeratus.style.display = 'none';
             document.getElementById('teks-amaran').style.display = 'block';
 
+            // KITA UBAH KAT SINI: Mainkan lagu SEGERA lepas cecah 100%
+            // Ini untuk lepas "security check" browser telefon
+            audioLagu.play();
+
             setTimeout(() => {
                 let skrinScanner = document.getElementById('skrin-scanner');
                 let skrinUtama = document.getElementById('kandungan-utama');
@@ -297,12 +301,9 @@
                     skrinScanner.style.display = 'none';
                     skrinUtama.style.display = 'flex';
                     
-                    // Mainkan lagu sebaik sahaja skrin bertukar pink
-                    audioLagu.play();
-
                     setTimeout(() => {
                         skrinUtama.style.opacity = '1';
-                        document.title = "Untuk Kamu 💖"; 
+                        document.title = "Untuk Awak 💖"; 
                         // Mula menaip ayat
                         setTimeout(() => taipAyat(mesejPenuh, 0), 500);
                     }, 50);
@@ -318,7 +319,6 @@
                 let paparanSementera = ayat.substring(0, i + 1).replace(/\n/g, '<br>');
                 ruangMesej.innerHTML = paparanSementera + '<span class="kursor"></span>';
                 
-                // Kelajuan menaip 
                 setTimeout(() => taipAyat(ayat, i + 1), 60);
             } else {
                 ruangMesej.innerHTML = ayat.replace(/\n/g, '<br>') + '<span class="kursor"></span>';
